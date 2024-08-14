@@ -1,14 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import useTypingEffect from '../hooks/useTypingEffect';
 
 const ChatMessage = ({ chat, isUser }) => {
-  // Use the typing effect hook for all messages
-  const typedText = useTypingEffect(chat.text, 2, 4);
-  const displayedText = isUser ? chat.text : typedText;
+  const [displayedText, setDisplayedText] = useState('');
+
+  useEffect(() => {
+
+    let currentIndex = 0;
+    let currentText = '';
+
+    const typeNextCharacter = () => {
+
+      if(isUser){
+        setDisplayedText(chat.text);
+        setTimeout(typeNextCharacter,4);
+      }
+      else if (currentIndex < chat.text.length) {
+        currentText += chat.text[currentIndex];
+        setDisplayedText(currentText);
+        currentIndex++;
+        setTimeout(typeNextCharacter, 4); // Adjust speed as needed
+      }
+    };
+
+    typeNextCharacter(); // Start typing effect when the component mounts
+
+    // Cleanup when component unmounts or re-renders
+    return () => {
+      setDisplayedText('');
+      clearTimeout(typeNextCharacter);
+    };
+  }, [chat.text, isUser]);
 
   return (
     <Box
